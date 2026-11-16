@@ -242,8 +242,8 @@ ol.list small{display:block;font-size:14px;font-weight:300;color:rgba(255,255,25
 
 /* face: tour */
 .tourFace{position:absolute;inset:0;overflow:hidden;cursor:zoom-in;background:#333}
-.tourInner{position:absolute;top:0;left:0;height:100%;width:auto;aspect-ratio:3200/1000;will-change:transform;pointer-events:none}
-.tourInner img{width:100%;height:100%;object-fit:cover}
+.tourInner{position:absolute;top:0;left:0;height:100%;width:auto;aspect-ratio:1.45;will-change:transform;pointer-events:none}
+.tourInner img,.tourInner canvas{display:block;width:100%;height:100%;object-fit:cover}
 .badge360{position:absolute;top:5%;right:6%;width:calc(var(--s)*.13);height:calc(var(--s)*.13);border-radius:50%;border:2px solid #fff;display:grid;place-items:center;color:#fff;font-weight:900;font-size:calc(var(--s)*.032);background:rgba(0,68,56,.55);backdrop-filter:blur(4px);pointer-events:none}
 .bottomFace{position:absolute;inset:0;display:grid;place-items:center}
 .bottomFace svg{width:40%}
@@ -441,7 +441,7 @@ ol.list small{display:block;font-size:14px;font-weight:300;color:rgba(255,255,25
       <!-- 04 tour -->
       <div class="face f-right" data-face="right">
         <div class="tourFace" id="tourFace" data-open="tour">
-          <div class="tourInner" id="tourInner"><img src="assets/tour-pano.jpg" alt=""></div>
+          <div class="tourInner" id="tourInner"><canvas id="tourCv" width="1740" height="1200"></canvas></div>
           <div class="badge360">360°</div>
         </div>
         <div class="tint"></div>
@@ -658,6 +658,17 @@ cmp.addEventListener('pointermove',e=>{if(e.target!==cmp)return;cmpUser=true;set
 
 /* ---------- tour face: slow auto pan ---------- */
 const tf=$('#tourFace'),ti=$('#tourInner');let tourCur=.5;
+/* flat camera view cut out of the 360 panorama (no fisheye stretch) */
+(()=>{const src=new Image();src.onload=()=>{
+  const SW=src.naturalWidth,SH=src.naturalHeight,FULLH=SW/2,OFF=380*SW/3200;
+  const sc=document.createElement('canvas');sc.width=SW;sc.height=SH;const sx=sc.getContext('2d');sx.drawImage(src,0,0);const sd=sx.getImageData(0,0,SW,SH).data;
+  const cv=$('#tourCv'),W=cv.width,H=cv.height,cx=cv.getContext('2d'),out=cx.createImageData(W,H),od=out.data;
+  const hf=Math.tan(47*Math.PI/180),vf=hf*H/W,yaw=(.69-.5)*2*Math.PI,pit=-12*Math.PI/180,cp=Math.cos(pit),sp=Math.sin(pit);
+  for(let y=0;y<H;y++){const Y=(1-2*(y+.5)/H)*vf;for(let x=0;x<W;x++){const X=(2*(x+.5)/W-1)*hf;
+    const dy=Y*cp+sp,dz=-Y*sp+cp,lon=Math.atan2(X,dz)+yaw,lat=Math.atan2(dy,Math.hypot(X,dz));
+    let u=(lon/(2*Math.PI)+.5)%1;if(u<0)u+=1;const col=Math.min(SW-1,u*SW|0),row=Math.max(0,Math.min(SH-1,((.5-lat/Math.PI)*FULLH-OFF)|0));
+    const si=(row*SW+col)*4,oi=(y*W+x)*4;od[oi]=sd[si];od[oi+1]=sd[si+1];od[oi+2]=sd[si+2];od[oi+3]=255}}
+  cx.putImageData(out,0,0)};src.src='assets/tour-pano.jpg'})();
 
 /* ---------- LARGE VIEWER ---------- */
 const viewer=$('#viewer'),vBody=$('#vBody'),vFoot=$('#vFoot'),vTools=$('#vTools');
@@ -851,7 +862,7 @@ function frame(now){
   if(act==='back' && !viewerMode && now-rTimer>3400){rTimer=now;setRender(rIdx+1)}
   if(act!=='back')rTimer=now;
 
-  tourCur=.5+Math.sin(now/3200)*.45;
+  tourCur=.5+Math.sin(now/4200)*.5;
   ti.style.transform=`translateX(${-(ti.offsetWidth-tf.offsetWidth)*(1-tourCur)}px)`;
   if(vTourState){const s=vTourState;s.x+=(s.tx-s.x)*.15;s.y+=(s.ty-s.y)*.15;s.inner.style.transform=`translate(${-(s.inner.offsetWidth-s.box.offsetWidth)*s.x}px,${-(s.inner.offsetHeight-s.box.offsetHeight)*s.y}px)`}
 

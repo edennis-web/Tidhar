@@ -231,7 +231,6 @@ ol.list small{display:block;font-size:14px;font-weight:300;color:rgba(255,255,25
 .modelFace img{position:absolute;inset:4%;width:92%;height:92%;object-fit:contain;transition:opacity .6s}
 .modelFace img.cover{inset:0;width:100%;height:100%;object-fit:cover}
 .modelFace #mB{inset:0;width:100%;height:100%}
-.v-model img:last-child{inset:-6%;width:112%;height:112%}
 .modelFace img.off{opacity:0}
 .faceLabel{position:absolute;top:5%;right:6%;font-size:calc(var(--s)*.022);font-weight:700;letter-spacing:.1em;color:var(--green);background:rgba(255,255,255,.88);padding:.5em 1em}
 
@@ -437,8 +436,8 @@ ol.list small{display:block;font-size:14px;font-weight:300;color:rgba(255,255,25
       <!-- 02 model -->
       <div class="face f-left" data-face="left">
         <div class="modelFace" data-open="model">
-          <img id="mA" class="cover" src="assets/model-white.png" alt="">
-          <img id="mB" class="off" src="assets/model-grey-crop.png" alt="">
+          <img id="mA" class="cover" src="assets/model-full.webp" alt="">
+          <img id="mB" class="cover off" src="assets/model-mass.webp" alt="">
           <div class="faceLabel" id="modelLabel">מודל מלא</div>
         </div>
         <div class="tint"></div>
@@ -693,7 +692,7 @@ const VIEWS={
     $$('#vSeg button').forEach(b=>b.onclick=()=>{const im=c.querySelector('.b'),ln=c.querySelector('.ln');im.style.transition='clip-path .6s ease';ln.style.transition='left .6s ease';setCmpEl(c,+b.dataset.x);$$('#vSeg button').forEach(x=>x.classList.toggle('on',x===b))});
   }},
   model:{ey:'תוצר 02',t:'מודל תלת ממד של הדירה',build(){
-    vBody.innerHTML=`<div class="vbox wide v-model"><img class="cover" src="assets/model-white.png" alt=""><img src="assets/model-grey-crop.png" alt=""></div>`;
+    vBody.innerHTML=`<div class="vbox sq v-model"><img class="cover" src="assets/model-full.webp" alt=""><img class="cover" src="assets/model-mass.webp" alt=""></div>`;
     vTools.innerHTML=`<div class="seg"><button data-m="0">מודל מלא</button><button data-m="1">מודל מאסה</button></div>`;
     setModel(modelM);
   }},
